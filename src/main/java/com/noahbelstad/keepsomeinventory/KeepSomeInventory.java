@@ -97,7 +97,6 @@ public class KeepSomeInventory implements ModInitializer {
 			dispatcher.register(Commands.literal("keepsome")
 					.requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR))
 
-					// --- RELOAD COMMAND ---
 					.then(Commands.literal("reload")
 							.executes(context -> {
 								CONFIG = KeepSomeInventoryConfig.load();
@@ -106,10 +105,8 @@ public class KeepSomeInventory implements ModInitializer {
 							})
 					)
 
-					// --- CONFIG (OPEN FILE) COMMAND ---
 					.then(Commands.literal("config")
 							.executes(context -> {
-								// Check if the server is a dedicated server
 								if (context.getSource().getServer().isDedicatedServer()) {
 									context.getSource().sendFailure(Component.literal("§cThis command can only be used in Singleplayer (Integrated Server)!"));
 									return 0; // Return 0 to indicate the command failed
@@ -127,7 +124,6 @@ public class KeepSomeInventory implements ModInitializer {
 							})
 					)
 
-					// --- ADD COMMAND ---
 					.then(Commands.literal("add")
 							.executes(context -> { // No arguments: add held item
 								ServerPlayer player = context.getSource().getPlayerOrException();
@@ -151,7 +147,6 @@ public class KeepSomeInventory implements ModInitializer {
 							)
 					)
 
-					// --- REMOVE COMMAND ---
 					.then(Commands.literal("remove")
 							.executes(context -> { // No arguments: remove held item
 								ServerPlayer player = context.getSource().getPlayerOrException();

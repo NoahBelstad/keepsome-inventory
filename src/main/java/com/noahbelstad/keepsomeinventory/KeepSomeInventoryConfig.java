@@ -22,7 +22,6 @@ public class KeepSomeInventoryConfig {
 
     public double dropChance = 0.75;
 
-    // Wrapped in an ArrayList to ensure it is mutable when we add/remove via commands
     public List<String> whitelist = new ArrayList<>(List.of(
             // --- Netherite Tier ---
             "minecraft:netherite_sword",
