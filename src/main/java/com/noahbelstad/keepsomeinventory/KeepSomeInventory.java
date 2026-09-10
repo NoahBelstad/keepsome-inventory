@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.Util;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRuleCategory;
 import net.minecraft.world.level.gamerules.GameRules;
 
+import java.io.File;
 import java.util.Set;
 
 public class KeepSomeInventory implements ModInitializer {
@@ -93,6 +96,8 @@ public class KeepSomeInventory implements ModInitializer {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(Commands.literal("keepsome")
 					.requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR))
+
+					// --- RELOAD COMMAND ---
 					.then(Commands.literal("reload")
 							.executes(context -> {
 								CONFIG = KeepSomeInventoryConfig.load();
@@ -100,6 +105,28 @@ public class KeepSomeInventory implements ModInitializer {
 								return 1;
 							})
 					)
+
+					// --- CONFIG (OPEN FILE) COMMAND ---
+					.then(Commands.literal("config")
+							.executes(context -> {
+								// Check if the server is a dedicated server
+								if (context.getSource().getServer().isDedicatedServer()) {
+									context.getSource().sendFailure(Component.literal("§cThis command can only be used in Singleplayer (Integrated Server)!"));
+									return 0; // Return 0 to indicate the command failed
+								}
+
+								File configFile = FabricLoader.getInstance().getConfigDir().resolve("keepsome-inventory.json").toFile();
+
+								if (configFile.exists()) {
+									Util.getPlatform().openFile(configFile);
+									context.getSource().sendSuccess(() -> Component.literal("§aOpening the config file..."), false);
+								} else {
+									context.getSource().sendFailure(Component.literal("§cConfig file does not exist yet!"));
+								}
+								return 1;
+							})
+					)
+
 					// --- ADD COMMAND ---
 					.then(Commands.literal("add")
 							.executes(context -> { // No arguments: add held item
@@ -123,6 +150,7 @@ public class KeepSomeInventory implements ModInitializer {
 									})
 							)
 					)
+
 					// --- REMOVE COMMAND ---
 					.then(Commands.literal("remove")
 							.executes(context -> { // No arguments: remove held item
