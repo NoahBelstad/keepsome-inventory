@@ -19,6 +19,8 @@ public class KeepSomeInventoryConfig {
     private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("keepsome-inventory.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
+    public double dropChance = 0.75;
+
     public List<String> whitelist = List.of(
             // --- Netherite Tier ---
             "minecraft:netherite_sword",
@@ -130,7 +132,7 @@ public class KeepSomeInventoryConfig {
         if (CONFIG_FILE.exists()) {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 KeepSomeInventoryConfig loaded = GSON.fromJson(reader, KeepSomeInventoryConfig.class);
-                if (loaded != null && loaded.whitelist != null) {
+                if (loaded != null) {
                     config = loaded;
                 }
             } catch (IOException e) {
@@ -152,6 +154,8 @@ public class KeepSomeInventoryConfig {
 
     public Set<Item> getResolvedWhitelist() {
         Set<Item> items = new HashSet<>();
+        if (whitelist == null) return items;
+
         for (String id : whitelist) {
             Identifier location = Identifier.tryParse(id);
             if (location != null) {

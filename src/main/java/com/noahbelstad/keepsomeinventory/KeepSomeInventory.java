@@ -13,8 +13,6 @@ public class KeepSomeInventory implements ModInitializer {
 	public static final String MOD_ID = "keepsome-inventory";
 	private static KeepSomeInventoryConfig CONFIG;
 
-	private static final double DROP_CHANCE = 0.75;
-
 	@Override
 	public void onInitialize() {
 		CONFIG = KeepSomeInventoryConfig.load();
@@ -36,7 +34,7 @@ public class KeepSomeInventory implements ModInitializer {
 				int dropCount = 0;
 
 				for (int j = 0; j < originalCount; j++) {
-					if (Math.random() < DROP_CHANCE) {
+					if (Math.random() < CONFIG.dropChance) {
 						dropCount++;
 					}
 				}
