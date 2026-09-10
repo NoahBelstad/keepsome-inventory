@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +22,8 @@ public class KeepSomeInventoryConfig {
 
     public double dropChance = 0.75;
 
-    public List<String> whitelist = List.of(
+    // Wrapped in an ArrayList to ensure it is mutable when we add/remove via commands
+    public List<String> whitelist = new ArrayList<>(List.of(
             // --- Netherite Tier ---
             "minecraft:netherite_sword",
             "minecraft:netherite_pickaxe",
@@ -125,7 +127,7 @@ public class KeepSomeInventoryConfig {
             "minecraft:spyglass",
             "minecraft:carrot_on_a_stick",
             "minecraft:warped_fungus_on_a_stick"
-    );
+    ));
 
     public static KeepSomeInventoryConfig load() {
         KeepSomeInventoryConfig config = new KeepSomeInventoryConfig();
@@ -149,6 +151,26 @@ public class KeepSomeInventoryConfig {
             GSON.toJson(config, writer);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void addWhitelistItem(String id) {
+        if (!id.contains(":")) {
+            id = "minecraft:" + id;
+        }
+        if (!whitelist.contains(id)) {
+            whitelist.add(id);
+            save(this);
+        }
+    }
+
+    public void removeWhitelistItem(String id) {
+        if (!id.contains(":")) {
+            id = "minecraft:" + id;
+        }
+        if (whitelist.contains(id)) {
+            whitelist.remove(id);
+            save(this);
         }
     }
 

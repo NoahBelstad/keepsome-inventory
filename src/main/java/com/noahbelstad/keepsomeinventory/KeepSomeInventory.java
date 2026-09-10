@@ -1,12 +1,18 @@
 package com.noahbelstad.keepsomeinventory;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -25,10 +31,10 @@ public class KeepSomeInventory implements ModInitializer {
 			.category(GameRuleCategory.PLAYER)
 			.buildAndRegister(Identifier.fromNamespaceAndPath(MOD_ID, "do_keep_some_inventory"));
 
-
 	@Override
 	public void onInitialize() {
 		CONFIG = KeepSomeInventoryConfig.load();
+		registerCommands();
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			boolean doKeepSomeInventory = server.overworld().getGameRules().get(RULE_DO_KEEP_SOME_INVENTORY);
@@ -80,6 +86,67 @@ public class KeepSomeInventory implements ModInitializer {
 					stack.shrink(dropCount);
 				}
 			}
+		});
+	}
+
+	private void registerCommands() {
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(Commands.literal("keepsome")
+					.requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR))
+					.then(Commands.literal("reload")
+							.executes(context -> {
+								CONFIG = KeepSomeInventoryConfig.load();
+								context.getSource().sendSuccess(() -> Component.literal("§aKeepSomeInventory configuration reloaded!"), true);
+								return 1;
+							})
+					)
+					// --- ADD COMMAND ---
+					.then(Commands.literal("add")
+							.executes(context -> { // No arguments: add held item
+								ServerPlayer player = context.getSource().getPlayerOrException();
+								ItemStack mainHand = player.getMainHandItem();
+								if (mainHand.isEmpty()) {
+									context.getSource().sendFailure(Component.literal("§cYou must hold an item or specify an item ID!"));
+									return 0;
+								}
+								String id = BuiltInRegistries.ITEM.getKey(mainHand.getItem()).toString();
+								CONFIG.addWhitelistItem(id);
+								context.getSource().sendSuccess(() -> Component.literal("§aAdded " + id + " to the KeepSomeInventory whitelist."), true);
+								return 1;
+							})
+							.then(Commands.argument("itemid", StringArgumentType.word()) // Argument: add string ID
+									.executes(context -> {
+										String id = StringArgumentType.getString(context, "itemid");
+										CONFIG.addWhitelistItem(id);
+										context.getSource().sendSuccess(() -> Component.literal("§aAdded " + id + " to the KeepSomeInventory whitelist."), true);
+										return 1;
+									})
+							)
+					)
+					// --- REMOVE COMMAND ---
+					.then(Commands.literal("remove")
+							.executes(context -> { // No arguments: remove held item
+								ServerPlayer player = context.getSource().getPlayerOrException();
+								ItemStack mainHand = player.getMainHandItem();
+								if (mainHand.isEmpty()) {
+									context.getSource().sendFailure(Component.literal("§cYou must hold an item or specify an item ID!"));
+									return 0;
+								}
+								String id = BuiltInRegistries.ITEM.getKey(mainHand.getItem()).toString();
+								CONFIG.removeWhitelistItem(id);
+								context.getSource().sendSuccess(() -> Component.literal("§eRemoved " + id + " from the KeepSomeInventory whitelist."), true);
+								return 1;
+							})
+							.then(Commands.argument("itemid", StringArgumentType.word()) // Argument: remove string ID
+									.executes(context -> {
+										String id = StringArgumentType.getString(context, "itemid");
+										CONFIG.removeWhitelistItem(id);
+										context.getSource().sendSuccess(() -> Component.literal("§eRemoved " + id + " from the KeepSomeInventory whitelist."), true);
+										return 1;
+									})
+							)
+					)
+			);
 		});
 	}
 }
