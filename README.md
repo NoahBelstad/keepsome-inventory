@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Features
+## Features
 
 * **Custom Whitelist:** Define a list of items that are completely safe and never drop upon death (pre-configured with vanilla tools, armor tiers, and utility items).
 * **Randomized Drop Chance:** Non-whitelisted items have a customizable probability (`dropChance`) of dropping when you die.
@@ -13,7 +13,7 @@
 
 ---
 
-## 🎮 Game Rule
+## Game Rule
 
 The mod introduces a custom game rule to toggle the feature on or off:
 
@@ -23,7 +23,7 @@ When enabled, it forces vanilla `keepInventory` to true and applies the mod's cu
 
 ---
 
-## ⚙️ Commands
+## Commands
 
 All commands require **Operator / Moderator permissions** (`Permissions.COMMANDS_MODERATOR`).
 
@@ -38,7 +38,7 @@ All commands require **Operator / Moderator permissions** (`Permissions.COMMANDS
 
 ---
 
-## 📄 Configuration
+## Configuration
 
 The configuration file is saved as `keepsome-inventory.json` in your config directory.
 
